@@ -48,9 +48,10 @@ const formSchema = z.object({
 export default function ImageUploadForm() {
   const [preview, setPreview] = useState<string | null>(null);
   const router = useRouter();
-
+  const apiUtils = api.useUtils();
   const addHeightImageMutation = api.growth.addHeightImage.useMutation({
     onSuccess: () => {
+      void apiUtils.userProfile.getUserProfileData.invalidate();
       router.push("/dashboard");
     },
     onError: () => {
