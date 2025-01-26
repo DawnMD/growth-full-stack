@@ -6,15 +6,39 @@ generator client {
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
+enum Gender {
+    MALE
+    FEMALE
+    OTHER
+}
+
+model User {
+    id        String   @id @default(cuid())
+    clerkId   String   @unique
+    firstName String
+    lastName  String?
+    weight    Int
+    age       Int
+    gender    Gender?
+    height    Height[]
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    @@index([name])
+    @@index([clerkId])
+}
+
+model Height {
+    id        String   @id @default(cuid())
+    height    Int
+    userId    String
+    user      User     @relation(fields: [userId], references: [clerkId])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([userId])
 }
