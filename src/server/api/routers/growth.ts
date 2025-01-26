@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
 const growthModelResponseDummy = {
   predictions: {
-    height: 140.0,
+    height: Math.floor(Math.random() * 100) + 100,
     weight: 47.7,
   },
   units: {

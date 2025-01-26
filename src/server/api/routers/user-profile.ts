@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { currentUser } from "@clerk/nextjs/server";
 
 export const userProfileRouter = createTRPCRouter({
   createNewUser: protectedProcedure
@@ -25,9 +26,31 @@ export const userProfileRouter = createTRPCRouter({
         },
       });
     }),
-  getUserProfile: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.user.findUnique({
-      where: { clerkId: ctx.userId },
-    });
+  getUserProfileData: protectedProcedure.query(async ({ ctx }) => {
+    const [user, userData] = await Promise.all([
+      currentUser(),
+      ctx.db.user.findUnique({
+        where: { clerkId: ctx.userId },
+        include: {
+          height: {
+            select: {
+              createdAt: true,
+              height: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+        },
+      }),
+    ]);
+
+    const processedData = {
+      ...userData,
+      profilePicture: user?.imageUrl,
+      latestHeight: userData?.height[0]?.height ?? 0,
+    };
+
+    return processedData;
   }),
 });
