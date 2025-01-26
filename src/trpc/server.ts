@@ -6,6 +6,8 @@ import { cache } from "react";
 
 import { createCaller, type AppRouter } from "@/server/api/root";
 import { createTRPCContext } from "@/server/api/trpc";
+import { getAuth } from "@clerk/nextjs/server";
+import { NextRequest } from "next/server";
 import { createQueryClient } from "./query-client";
 
 /**
@@ -18,6 +20,11 @@ const createContext = cache(async () => {
 
   return createTRPCContext({
     headers: heads,
+    auth: getAuth(
+      new NextRequest(process.env.VERCEL_URL ?? "http://localhost:3000", {
+        headers: await headers(),
+      }),
+    ),
   });
 });
 
@@ -26,5 +33,5 @@ const caller = createCaller(createContext);
 
 export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
   caller,
-  getQueryClient
+  getQueryClient,
 );
