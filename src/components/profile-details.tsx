@@ -9,182 +9,269 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ChartContainer } from "@/components/ui/chart";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import {
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  type TooltipProps,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-// Mock data for the user profile
-// const userProfile = {
-//   name: "John Doe",
-//   email: "john.doe@example.com",
-//   age: 30,
-//   weight: 75, // in kg
-//   height: 180, // in cm
-//   profilePicture: "/placeholder.svg",
-// };
+type CustomTooltipProps = TooltipProps<number, string> & {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+  label?: string;
+};
 
-// Mock data for height over a month
-// const heightData = [
-//   { date: "2023-05-01", height: 180 },
-//   { date: "2023-05-08", height: 180.2 },
-//   { date: "2023-05-15", height: 180.5 },
-//   { date: "2023-05-22", height: 180.3 },
-//   { date: "2023-05-29", height: 180.7 },
-// ];
+const CustomTooltip: React.FC<CustomTooltipProps> = ({
+  active,
+  payload,
+  label,
+}) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded border bg-background p-3 shadow">
+        <p className="font-semibold">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} style={{ color: entry.color }}>
+            {entry.name}: {entry.value?.toFixed(1) ?? "N/A"}{" "}
+            {entry.name?.includes("Weight") ? "kg" : "cm"}
+          </p>
+        ))}
+      </div>
+    );
+  }
 
-const cmToFtIn = (cm: number) => {
-  const inches = cm / 2.54;
-  const feet = Math.floor(inches / 12);
-  const remainingInches = (inches % 12).toFixed(1);
-  return `${feet}'${remainingInches}"`;
+  return null;
+};
+
+const chartConfig = {
+  weight: {
+    userWeight: {
+      label: "Your Weight",
+      color: "hsl(var(--chart-1))",
+    },
+    avgWeight: {
+      label: "Average Weight",
+      color: "hsl(var(--chart-2))",
+    },
+  },
+  height: {
+    userHeight: {
+      label: "Your Height",
+      color: "hsl(var(--chart-1))",
+    },
+    avgHeight: {
+      label: "Average Height",
+      color: "hsl(var(--chart-2))",
+    },
+  },
 };
 
 export default function ProfileDetails() {
-  const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
   const router = useRouter();
   const { data: userProfileData, isLoading } =
     api.userProfile.getUserProfileData.useQuery();
 
-  const formattedHeightData = userProfileData?.height?.map((data) => ({
-    ...data,
-    height:
-      heightUnit === "cm"
-        ? data.height
-        : Number.parseFloat(cmToFtIn(data.height)?.split("'")[0] ?? "0"),
+  const formattedHeightData =
+    userProfileData?.height?.map((data) => ({
+      ...data,
+      height: data.height,
+      createdAt: new Date(data.createdAt).toLocaleDateString(),
+    })) ?? [];
+
+  const formattedWeightData =
+    userProfileData?.weight?.map((data) => ({
+      ...data,
+      weight: data.weight,
+      createdAt: data.createdAt.toLocaleDateString(),
+    })) ?? [];
+
+  // Dunmmy data for average weight
+  const averageWeightData = Array.from({ length: 10 }, (_, i) => ({
+    createdAt: new Date(
+      Date.now() - i * 1000 * 60 * 60 * 24,
+    ).toLocaleDateString(),
+    weight: Math.random() * 10 + 50,
   }));
 
-  const handleAddNewHeight = () => {
-    router.push("/upload-height-image");
+  // Dummy data for average height
+  const averageHeightData = Array.from({ length: 10 }, (_, i) => ({
+    createdAt: new Date(
+      Date.now() - i * 1000 * 60 * 60 * 24,
+    ).toLocaleDateString(),
+    height: Math.random() * 10 + 150,
+  }));
+
+  const [activeTab, setActiveTab] = useState("weight");
+
+  const handleAddNewMeasurement = () => {
+    router.push(`/upload-new-measurement`);
   };
 
   if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="container mx-auto space-y-6 p-4">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>User Profile</CardTitle>
-            <CardDescription>Your personal information</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <Avatar className="h-24 w-24">
-              <AvatarImage
-                src={userProfileData?.profilePicture}
-                alt={userProfileData?.firstName ?? "User"}
-              />
-              <AvatarFallback>
-                {userProfileData?.firstName
-                  ?.split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-center sm:text-left">
-              <h2 className="text-2xl font-bold">
-                {userProfileData?.firstName}
-              </h2>
-              {/* <p className="text-gray-500">{userProfileData?.email}</p> */}
-              <p>Age: {userProfileData?.age} years</p>
-              <p>Weight: {userProfileData?.weight} kg</p>
-              <p>
-                Height:{" "}
-                {heightUnit === "cm"
-                  ? `${userProfileData?.latestHeight} cm`
-                  : cmToFtIn(userProfileData?.latestHeight ?? 0)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>User Profile</CardTitle>
+          <CardDescription>Your personal information</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+          <Avatar className="h-24 w-24">
+            <AvatarImage
+              src={userProfileData?.profilePicture}
+              alt={userProfileData?.firstName}
+            />
+            <AvatarFallback>
+              {userProfileData?.firstName
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </AvatarFallback>
+          </Avatar>
+          <div className="text-center sm:text-left">
+            <h2 className="text-2xl font-bold">
+              {userProfileData?.firstName} {userProfileData?.lastName}
+            </h2>
 
-        <Card className="md:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Height Over Time</CardTitle>
-              <CardDescription>
-                Your height measurements for the past month
-              </CardDescription>
-            </div>
-            <Button onClick={handleAddNewHeight}>Add New Height</Button>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4 flex justify-end">
-              <Select
-                value={heightUnit}
-                onValueChange={(value: "cm" | "ft") => setHeightUnit(value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cm">Centimeters (cm)</SelectItem>
-                  <SelectItem value="ft">
-                    Feet and Inches (ft&apos;in)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <ChartContainer
-              config={{
-                height: {
-                  label: heightUnit === "cm" ? "Height (cm)" : "Height (ft'in)",
-                  color: "hsl(var(--chart-1))",
-                },
-              }}
-              className="h-[300px]"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={formattedHeightData}>
-                  <XAxis dataKey="date" />
-                  <YAxis
-                    dataKey="height"
-                    domain={heightUnit === "cm" ? ["auto", "auto"] : [5.9, 6]}
-                    tickFormatter={(value: number) =>
-                      heightUnit === "cm"
-                        ? value.toFixed(1)
-                        : `${value.toFixed(1)}'`
-                    }
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="height"
-                    stroke="var(--color-height)"
-                    strokeWidth={2}
-                  />
-                  <ChartTooltip
-                    content={({ payload, label }) => {
-                      if (payload?.length) {
-                        const value = payload[0]?.value as number;
-                        return (
-                          <div className="bg-background rounded p-2 shadow">
-                            <p className="font-semibold">{label}</p>
-                            <p>
-                              Height:{" "}
-                              {heightUnit === "cm"
-                                ? `${value.toFixed(1)} cm`
-                                : cmToFtIn(value)}
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+            <p>Age: {userProfileData?.age ?? "N/A"} years</p>
+            <p>Weight: {userProfileData?.latestWeight ?? "N/A"} kg</p>
+            <p>Height: {userProfileData?.latestHeight ?? "N/A"} cm</p>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Health Metrics Over Time</CardTitle>
+            <Button onClick={handleAddNewMeasurement}>
+              Add New Measurement
+            </Button>
+          </div>
+          <CardDescription>
+            Track your progress and compare with others
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              setActiveTab(value as "weight" | "height")
+            }
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="weight">Weight</TabsTrigger>
+              <TabsTrigger value="height">Height</TabsTrigger>
+            </TabsList>
+            <TabsContent value="weight">
+              {formattedWeightData && formattedWeightData.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <ChartContainer
+                    config={{ userWeight: chartConfig.weight.userWeight }}
+                    className="h-[300px]"
+                  >
+                    <LineChart data={formattedWeightData}>
+                      <XAxis dataKey="createdAt" />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="weight"
+                        name="Your Weight"
+                        stroke="var(--color-userWeight)"
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                  <ChartContainer
+                    config={{ avgWeight: chartConfig.weight.avgWeight }}
+                    className="h-[300px]"
+                  >
+                    <LineChart data={averageWeightData}>
+                      <XAxis dataKey="createdAt" />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="weight"
+                        name="Average Weight"
+                        stroke="var(--color-avgWeight)"
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                </div>
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  No average weight data available
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="height">
+              {formattedHeightData && formattedHeightData.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <ChartContainer
+                    config={{ userHeight: chartConfig.height.userHeight }}
+                    className="h-[300px]"
+                  >
+                    <LineChart data={formattedHeightData}>
+                      <XAxis dataKey="createdAt" />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="height"
+                        name="Your Height"
+                        stroke="var(--color-userHeight)"
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                  <ChartContainer
+                    config={{ avgHeight: chartConfig.height.avgHeight }}
+                    className="h-[300px]"
+                  >
+                    <LineChart data={averageHeightData}>
+                      <XAxis dataKey="createdAt" />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="height"
+                        name="Average Height"
+                        stroke="var(--color-avgHeight)"
+                        strokeWidth={2}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                </div>
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  No average height data available
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
