@@ -17,15 +17,26 @@ enum Gender {
     OTHER
 }
 
+enum UserType {
+    STUDENT
+    EMPLOYEE
+    PARENT
+}
+
 model User {
-    id        String   @id @default(cuid())
-    clerkId   String   @unique
-    firstName String
-    lastName  String?
-    weight    Int
-    age       Int
-    gender    Gender?
-    height    Height[]
+    id           String   @id @default(cuid())
+    clerkId      String   @unique
+    firstName    String
+    lastName     String?
+    age          Int
+    type         UserType @default(STUDENT)
+    gender       Gender?
+    height       Height[]
+    weight       Weight[]
+    heightsAdded Height[] @relation("heightAddedBy")
+    weightsAdded Weight[] @relation("weightAddedBy")
+    state        String?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
@@ -36,9 +47,26 @@ model Height {
     id        String   @id @default(cuid())
     height    Int
     userId    String
-    user      User     @relation(fields: [userId], references: [clerkId])
+    addedBy   User?    @relation("heightAddedBy", fields: [addedById], references: [clerkId], onDelete: SetNull, onUpdate: Cascade)
+    addedById String?
+    user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade, onUpdate: Cascade)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     @@index([userId])
+    @@index([addedById])
+}
+
+model Weight {
+    id        String   @id @default(cuid())
+    weight    Int
+    userId    String
+    addedBy   User?    @relation("weightAddedBy", fields: [addedById], references: [clerkId], onDelete: SetNull, onUpdate: Cascade)
+    addedById String?
+    user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade, onUpdate: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([userId])
+    @@index([addedById])
 }
