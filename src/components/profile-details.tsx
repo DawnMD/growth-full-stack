@@ -12,6 +12,7 @@ import {
 import { ChartContainer } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
+import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -80,6 +81,7 @@ const chartConfig = {
 };
 
 export default function ProfileDetails() {
+  const { signOut } = useClerk();
   const router = useRouter();
   const { data: userProfileData, isLoading } =
     api.student.getStudentProfile.useQuery();
@@ -151,6 +153,15 @@ export default function ProfileDetails() {
             <p>Weight: {userProfileData?.latestWeight ?? "N/A"} kg</p>
             <p>Height: {userProfileData?.latestHeight ?? "N/A"} cm</p>
           </div>
+          <Button
+            onClick={() =>
+              signOut({
+                redirectUrl: "/",
+              })
+            }
+          >
+            Signout
+          </Button>
         </CardContent>
       </Card>
       <Card className="w-full">
