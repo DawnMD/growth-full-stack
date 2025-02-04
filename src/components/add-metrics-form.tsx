@@ -70,16 +70,18 @@ export default function AddMetricsForm() {
   const apiUtils = api.useUtils();
 
   const { mutate: addHealthMetrics, isPending: isAddingHealthMetrics } =
-    api.growth.addHealthMetrics.useMutation({
+    api.student.addHealthMetrics.useMutation({
       onSuccess: async () => {
         toast({
           title: "Metrics added successfully",
+
           description: "Your health metrics have been updated.",
         });
         form.reset();
-        await apiUtils.userProfile.getUserProfileData.invalidate();
-        router.push("/dashboard");
+        await apiUtils.student.getStudentProfile.invalidate();
+        router.push("/student/dashboard");
       },
+
       onError: () => {
         toast({
           title: "Error",
@@ -92,7 +94,7 @@ export default function AddMetricsForm() {
   const {
     mutateAsync: getHeightFromImage,
     isPending: isGettingHeightFromImage,
-  } = api.growth.getHeightFromImage.useMutation();
+  } = api.common.getHeightFromImage.useMutation();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {

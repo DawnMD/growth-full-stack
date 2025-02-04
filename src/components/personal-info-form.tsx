@@ -39,17 +39,10 @@ const formSchema = z.object({
       message: "Age must be between 1 and 120.",
     }),
   ]),
-  weight: z.union([
-    z.string().refine((val) => val === "", { message: "Weight is required" }),
-    z.number().positive().max(500, {
-      message: "Weight must be between 1 and 500 kg.",
-    }),
-  ]),
   gender: z.enum(["MALE", "FEMALE", "OTHER"], {
     required_error: "Please select a gender.",
   }),
   state: z.string(),
-  type: z.enum(["STUDENT", "EMPLOYEE", "PARENT"]),
 });
 
 export default function PersonalInfoForm() {
@@ -57,18 +50,16 @@ export default function PersonalInfoForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       age: "",
-      weight: "",
       gender: undefined,
       state: "",
-      type: undefined,
     },
   });
 
   const router = useRouter();
 
-  const completeProfile = api.userProfile.createNewUser.useMutation({
+  const completeProfile = api.student.createStudent.useMutation({
     onSuccess: () => {
-      router.push("/dashboard");
+      router.push("/student/dashboard");
     },
     onError: (error) => {
       toast({
@@ -81,10 +72,8 @@ export default function PersonalInfoForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     completeProfile.mutate({
       age: Number(values.age),
-      weight: Number(values.weight),
       gender: values.gender,
       state: values.state,
-      type: values.type,
     });
   }
 
@@ -117,57 +106,6 @@ export default function PersonalInfoForm() {
                         }}
                       />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="weight"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Weight (kg)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="70"
-                        {...field}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(
-                            value === "" ? "" : Number.parseFloat(value),
-                          );
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type</FormLabel>
-
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="STUDENT">Student</SelectItem>
-                        <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                        <SelectItem value="PARENT">Parent</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

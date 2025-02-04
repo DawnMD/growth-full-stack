@@ -18,7 +18,6 @@ import {
   Legend,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   type TooltipProps,
   XAxis,
@@ -83,17 +82,17 @@ const chartConfig = {
 export default function ProfileDetails() {
   const router = useRouter();
   const { data: userProfileData, isLoading } =
-    api.userProfile.getUserProfileData.useQuery();
+    api.student.getStudentProfile.useQuery();
 
   const formattedHeightData =
-    userProfileData?.height?.map((data) => ({
+    userProfileData?.heights?.map((data) => ({
       ...data,
       height: data.height,
       createdAt: new Date(data.createdAt).toLocaleDateString(),
     })) ?? [];
 
   const formattedWeightData =
-    userProfileData?.weight?.map((data) => ({
+    userProfileData?.weights?.map((data) => ({
       ...data,
       weight: data.weight,
       createdAt: data.createdAt.toLocaleDateString(),
@@ -118,7 +117,7 @@ export default function ProfileDetails() {
   const [activeTab, setActiveTab] = useState("weight");
 
   const handleAddNewMeasurement = () => {
-    router.push(`/upload-new-measurement`);
+    router.push(`/student/upload-new-measurement`);
   };
 
   if (isLoading) return <div>Loading...</div>;
