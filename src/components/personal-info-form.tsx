@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { states } from "@/data/states";
 import { toast } from "@/hooks/use-toast";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,46 +33,33 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 const formSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "First name must be at least 2 characters.",
-  }),
-  lastName: z.string().min(2, {
-    message: "Last name must be at least 2 characters.",
-  }),
   age: z.union([
     z.string().refine((val) => val === "", { message: "Age is required" }),
     z.number().int().positive().max(120, {
       message: "Age must be between 1 and 120.",
     }),
   ]),
-  weight: z.union([
-    z.string().refine((val) => val === "", { message: "Weight is required" }),
-    z.number().positive().max(500, {
-      message: "Weight must be between 1 and 500 kg.",
-    }),
-  ]),
   gender: z.enum(["MALE", "FEMALE", "OTHER"], {
     required_error: "Please select a gender.",
   }),
+  state: z.string(),
 });
 
 export default function PersonalInfoForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
       age: "",
-      weight: "",
       gender: undefined,
+      state: "",
     },
   });
 
   const router = useRouter();
 
-  const completeProfile = api.userProfile.createNewUser.useMutation({
+  const completeProfile = api.student.createStudent.useMutation({
     onSuccess: () => {
-      router.push("/dashboard");
+      router.push("/student/dashboard");
     },
     onError: (error) => {
       toast({
@@ -83,11 +71,9 @@ export default function PersonalInfoForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     completeProfile.mutate({
-      firstName: values.firstName,
-      lastName: values.lastName,
       age: Number(values.age),
-      weight: Number(values.weight),
       gender: values.gender,
+      state: values.state,
     });
   }
 
@@ -100,34 +86,6 @@ export default function PersonalInfoForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -154,23 +112,26 @@ export default function PersonalInfoForm() {
               />
               <FormField
                 control={form.control}
-                name="weight"
+                name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Weight (kg)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="70"
-                        {...field}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(
-                            value === "" ? "" : Number.parseFloat(value),
-                          );
-                        }}
-                      />
-                    </FormControl>
+                    <FormLabel>Gender</FormLabel>
+
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="MALE">Male</SelectItem>
+                        <SelectItem value="FEMALE">Female</SelectItem>
+                        <SelectItem value="OTHER">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -178,31 +139,41 @@ export default function PersonalInfoForm() {
             </div>
             <FormField
               control={form.control}
-              name="gender"
+              name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Gender</FormLabel>
+                  <FormLabel>State</FormLabel>
+
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a gender" />
+                        <SelectValue placeholder="Select a state" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="MALE">Male</SelectItem>
-                      <SelectItem value="FEMALE">Female</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
+                      {states.map((state) => (
+                        <SelectItem
+                          key={state.abbreviation}
+                          value={state.abbreviation}
+                        >
+                          {state.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Submit
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={completeProfile.isPending}
+            >
+              {completeProfile.isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Form>

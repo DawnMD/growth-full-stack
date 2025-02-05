@@ -10,6 +10,12 @@ import { getAuth } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 import { createQueryClient } from "./query-client";
 
+function getBaseUrl() {
+  if (typeof window !== "undefined") return window.location.origin;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:${process.env.PORT ?? 3000}`;
+}
+
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
  * handling a tRPC call from a React Server Component.
@@ -21,7 +27,7 @@ const createContext = cache(async () => {
   return createTRPCContext({
     headers: heads,
     auth: getAuth(
-      new NextRequest(process.env.VERCEL_URL ?? "http://localhost:3000", {
+      new NextRequest(getBaseUrl(), {
         headers: await headers(),
       }),
     ),
