@@ -153,11 +153,11 @@ export default function PersonalInfoForm() {
                 name="height"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Height</FormLabel>
+                    <FormLabel>Height (cm)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="170"
+                        placeholder="Enter your height in cm"
                         {...field}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -177,11 +177,11 @@ export default function PersonalInfoForm() {
                 name="weight"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Weight</FormLabel>
+                    <FormLabel>Weight (kgs)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="70"
+                        placeholder="Enter your weight in kgs"
                         {...field}
                         onChange={(e) => {
                           const value = e.target.value;

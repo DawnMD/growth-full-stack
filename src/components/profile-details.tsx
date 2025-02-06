@@ -62,21 +62,21 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
 const chartConfig = {
   weight: {
     userWeight: {
-      label: "Your Weight",
+      label: "Your Weight (kgs)",
       color: "hsl(var(--chart-1))",
     },
     avgWeight: {
-      label: "Average Weight",
+      label: "Average Weight (kgs)",
       color: "hsl(var(--chart-2))",
     },
   },
   height: {
     userHeight: {
-      label: "Your Height",
+      label: "Your Height (cm)",
       color: "hsl(var(--chart-1))",
     },
     avgHeight: {
-      label: "Average Height",
+      label: "Average Height (cm)",
       color: "hsl(var(--chart-2))",
     },
   },
@@ -333,7 +333,7 @@ export default function ProfileDetails() {
                       <Line
                         type="monotone"
                         dataKey="weight"
-                        name="Your Weight"
+                        name="Your Weight (kgs)"
                         stroke="var(--color-userWeight)"
                         strokeWidth={2}
                       />
@@ -351,7 +351,7 @@ export default function ProfileDetails() {
                       <Line
                         type="monotone"
                         dataKey="weight"
-                        name="Average Weight"
+                        name="Average Weight (kgs)"
                         stroke="var(--color-avgWeight)"
                         strokeWidth={2}
                       />
@@ -379,7 +379,7 @@ export default function ProfileDetails() {
                       <Line
                         type="monotone"
                         dataKey="height"
-                        name="Your Height"
+                        name="Your Height (cm)"
                         stroke="var(--color-userHeight)"
                         strokeWidth={2}
                       />
@@ -397,7 +397,7 @@ export default function ProfileDetails() {
                       <Line
                         type="monotone"
                         dataKey="height"
-                        name="Average Height"
+                        name="Average Height (cm)"
                         stroke="var(--color-avgHeight)"
                         strokeWidth={2}
                       />

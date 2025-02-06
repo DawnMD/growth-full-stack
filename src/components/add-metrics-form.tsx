@@ -137,7 +137,7 @@ export default function AddMetricsForm() {
               name="weight"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Weight (kg)</FormLabel>
+                  <FormLabel>Weight (kgs)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
