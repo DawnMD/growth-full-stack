@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { states } from "@/data/states";
 import { api } from "@/trpc/react";
 import { useClerk } from "@clerk/nextjs";
+import { Check, Cross, Pin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -162,6 +164,135 @@ export default function ProfileDetails() {
           >
             Signout
           </Button>
+        </CardContent>
+      </Card>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Report</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center gap-6">
+          <div className="grid w-full grid-cols-4 gap-4">
+            <div className="flex flex-col items-center justify-center">
+              <p>Name</p>
+              <p>
+                {userProfileData?.firstName} {userProfileData?.lastName}
+              </p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p>Age</p>
+              <p>{userProfileData?.age} years</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p>Gender</p>
+              <p>{userProfileData?.gender}</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p>State</p>
+              <p>
+                {
+                  states.find(
+                    (state) => state.abbreviation === userProfileData?.state,
+                  )?.name
+                }
+              </p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p>Weight</p>
+              <p>{userProfileData?.latestWeight} kg</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p>Height</p>
+              <p>{userProfileData?.latestHeight} cm</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p>BMI</p>
+              <p>
+                {/* bmi from weight and height, weight in kgs and height in cm */}
+                {/* convert height to meters */}
+                {userProfileData?.latestWeight
+                  ? (
+                      userProfileData?.latestWeight /
+                      (((userProfileData?.latestHeight / 100) *
+                        userProfileData?.latestHeight) /
+                        100)
+                    ).toFixed(2)
+                  : "N/A"}
+                kg/m²
+              </p>
+            </div>
+          </div>
+          <p>Nutritional status: Normal, but at a risk of mild malnutrition</p>
+          <div className="flex flex-col gap-4">
+            <p className="text-center">health and nutritional assessment</p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Height-for-Age: Within normal range</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Weight-for-Height: Proportionate growth observed</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cross className="h-4 w-4 text-red-500" />
+                <p>
+                  Dietary Deficiencies Identified: Slight deficiency in iron and
+                  vitamin D
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cross className="h-4 w-4 text-red-500" />
+                <p>
+                  Risk Factors: Prone to seasonal infections due to lower
+                  immunity
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-4">
+            <p className="text-center">action plan for growth optimization</p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Pin className="h-4 w-4 text-yellow-500" />
+                <p>Short term (3 months):</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>
+                  Include more iron-rich foods like spinach, jaggery, and
+                  lentils
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Increase sun exposure for vitamin D</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>
+                  Regular weight and height tracking using AI-based MAAP tool
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Pin className="h-4 w-4 text-yellow-500" />
+                <p>Long term (6-12 months):</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Balanced diet ensuring complete micronutrient needs</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Deworming every 6 months as per pediatrician advice</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Annual nutritional screening</p>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
       <Card className="w-full">
