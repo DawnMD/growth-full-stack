@@ -43,6 +43,12 @@ const formSchema = z.object({
     required_error: "Please select a gender.",
   }),
   state: z.string(),
+  height: z.number().int().positive().max(300, {
+    message: "Height must be between 1 and 300.",
+  }),
+  weight: z.number().int().positive().max(300, {
+    message: "Weight must be between 1 and 300.",
+  }),
 });
 
 export default function PersonalInfoForm() {
@@ -52,6 +58,8 @@ export default function PersonalInfoForm() {
       age: "",
       gender: undefined,
       state: "",
+      height: 0,
+      weight: 0,
     },
   });
 
@@ -74,6 +82,8 @@ export default function PersonalInfoForm() {
       age: Number(values.age),
       gender: values.gender,
       state: values.state,
+      height: values.height,
+      weight: values.weight,
     });
   }
 
@@ -132,6 +142,55 @@ export default function PersonalInfoForm() {
                         <SelectItem value="OTHER">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="height"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Height</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="170"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(
+                            value === "" ? "" : Number.parseInt(value, 10),
+                          );
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="70"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(
+                            value === "" ? "" : Number.parseInt(value, 10),
+                          );
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

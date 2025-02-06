@@ -9,6 +9,8 @@ export const studentRouter = createTRPCRouter({
         age: z.number(),
         gender: z.enum(["MALE", "FEMALE", "OTHER"]),
         state: z.string(),
+        height: z.number(),
+        weight: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -24,6 +26,16 @@ export const studentRouter = createTRPCRouter({
           clerkId: ctx.userId,
           firstName: user?.firstName ?? "",
           lastName: user?.lastName ?? "",
+          heights: {
+            create: {
+              height: input.height,
+            },
+          },
+          weights: {
+            create: {
+              weight: input.weight,
+            },
+          },
         },
       });
     }),
