@@ -1,15 +1,14 @@
-import { growthRouter } from "@/server/api/routers/growth";
-import { userProfileRouter } from "@/server/api/routers/user-profile";
+import { commonRouter } from "@/server/api/routers/common";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
-
+import { studentRouter } from "@/server/api/routers/student";
 /**
  * This is the primary router for your server.
  *
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  growth: growthRouter,
-  userProfile: userProfileRouter,
+  common: commonRouter,
+  student: studentRouter,
 });
 
 // export type definition of API
