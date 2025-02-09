@@ -8,8 +8,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "NutriFit",
-  description: "NutriFit",
+  title: "MAAP",
+  description: "MAAP",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -19,9 +19,9 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
-        <body>
+        <body className="flex min-h-dvh flex-col">
           <TRPCReactProvider>
-            <main>{children}</main>
+            <main className="flex flex-1 flex-col">{children}</main>
           </TRPCReactProvider>
           <Toaster />
           <Analytics />

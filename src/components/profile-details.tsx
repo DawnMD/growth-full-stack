@@ -2,17 +2,13 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { states } from "@/data/states";
 import { api } from "@/trpc/react";
-import { useClerk } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
+import { Check, Cross, Pin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -81,7 +77,6 @@ const chartConfig = {
 };
 
 export default function ProfileDetails() {
-  const { signOut } = useClerk();
   const router = useRouter();
   const { data: userProfileData, isLoading } =
     api.student.getStudentProfile.useQuery();
@@ -125,13 +120,17 @@ export default function ProfileDetails() {
   if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto space-y-6 p-4">
-      <Card className="w-full">
+    <div className="space-y-6 p-4">
+      <Card className="flex w-full items-center justify-between p-4 shadow-none">
         <CardHeader>
-          <CardTitle>User Profile</CardTitle>
-          <CardDescription>Your personal information</CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            Welcome back, {userProfileData?.firstName}
+          </CardTitle>
+          <Button variant="destructive" asChild>
+            <SignOutButton redirectUrl="/" />
+          </Button>
         </CardHeader>
-        <CardContent className="flex flex-col items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+        <CardContent className="flex flex-col items-center space-y-4 p-0 sm:flex-row sm:space-x-4 sm:space-y-0">
           <Avatar className="h-24 w-24">
             <AvatarImage
               src={userProfileData?.profilePicture}
@@ -145,36 +144,162 @@ export default function ProfileDetails() {
             </AvatarFallback>
           </Avatar>
           <div className="text-center sm:text-left">
-            <h2 className="text-2xl font-bold">
-              {userProfileData?.firstName} {userProfileData?.lastName}
-            </h2>
-
             <p>Age: {userProfileData?.age ?? "N/A"} years</p>
             <p>Weight: {userProfileData?.latestWeight ?? "N/A"} kg</p>
             <p>Height: {userProfileData?.latestHeight ?? "N/A"} cm</p>
           </div>
-          <Button
-            onClick={() =>
-              signOut({
-                redirectUrl: "/",
-              })
-            }
-          >
-            Signout
-          </Button>
         </CardContent>
       </Card>
-      <Card className="w-full">
+      <Card className="w-full space-y-8 p-4 shadow-none">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <CardTitle className="text-center text-2xl font-bold">
+            Your latest report
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center gap-6">
+          <div className="grid w-full grid-cols-4 gap-4">
+            <div className="flex flex-col items-center justify-center">
+              <p className="font-semibold">Name</p>
+              <p className="text-center">
+                {userProfileData?.firstName} {userProfileData?.lastName}
+              </p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="font-semibold">Age</p>
+              <p className="text-center">{userProfileData?.age} years</p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="font-semibold">Gender</p>
+              <p className="text-center">{userProfileData?.gender}</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center">
+              <p className="font-semibold">State</p>
+              <p className="text-center">
+                {
+                  states.find(
+                    (state) => state.abbreviation === userProfileData?.state,
+                  )?.name
+                }
+              </p>
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <p className="font-semibold">Weight</p>
+              <p className="text-center">{userProfileData?.latestWeight} kg</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center">
+              <p className="font-semibold">Height</p>
+              <p className="text-center">{userProfileData?.latestHeight} cm</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center">
+              <p className="font-semibold">BMI</p>
+              <p className="text-center">
+                {/* bmi from weight and height, weight in kgs and height in cm */}
+                {/* convert height to meters */}
+                {userProfileData?.latestWeight
+                  ? (
+                      userProfileData?.latestWeight /
+                      (((userProfileData?.latestHeight / 100) *
+                        userProfileData?.latestHeight) /
+                        100)
+                    ).toFixed(2)
+                  : "N/A"}
+                kg/m²
+              </p>
+            </div>
+          </div>
+          <p className="text-lg font-semibold">
+            Nutritional status: Normal, but at a risk of mild malnutrition
+          </p>
+          <div className="flex flex-col gap-4">
+            <p className="text-center font-semibold">
+              Health and nutritional assessment
+            </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+
+                <p>Height-for-Age: Within normal range</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Weight-for-Height: Proportionate growth observed</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cross className="h-4 w-4 text-red-500" />
+                <p>
+                  Dietary Deficiencies Identified: Slight deficiency in iron and
+                  vitamin D
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cross className="h-4 w-4 text-red-500" />
+                <p>
+                  Risk Factors: Prone to seasonal infections due to lower
+                  immunity
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-4">
+            <p className="text-center font-semibold">
+              Action plan for growth optimization
+            </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Pin className="h-4 w-4 text-yellow-500" />
+
+                <p>Short term (3 months):</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>
+                  Include more iron-rich foods like spinach, jaggery, and
+                  lentils
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Increase sun exposure for vitamin D</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>
+                  Regular weight and height tracking using AI-based MAAP tool
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Pin className="h-4 w-4 text-yellow-500" />
+                <p>Long term (6-12 months):</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Balanced diet ensuring complete micronutrient needs</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Deworming every 6 months as per pediatrician advice</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <p>Annual nutritional screening</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="w-full p-4 shadow-none">
+        <CardHeader>
+          <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
             <CardTitle>Health Metrics Over Time</CardTitle>
             <Button onClick={handleAddNewMeasurement}>
               Add New Measurement
             </Button>
           </div>
-          <CardDescription>
-            Track your progress and compare with others
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs

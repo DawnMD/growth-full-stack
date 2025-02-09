@@ -6,7 +6,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
@@ -43,6 +42,15 @@ const formSchema = z.object({
     required_error: "Please select a gender.",
   }),
   state: z.string(),
+  height: z.union([
+    z.string().refine((val) => val === "", { message: "Height is required" }),
+    z.number().int().positive(),
+  ]),
+
+  weight: z.union([
+    z.string().refine((val) => val === "", { message: "Weight is required" }),
+    z.number().int().positive(),
+  ]),
 });
 
 export default function PersonalInfoForm() {
@@ -52,6 +60,8 @@ export default function PersonalInfoForm() {
       age: "",
       gender: undefined,
       state: "",
+      height: "",
+      weight: "",
     },
   });
 
@@ -74,13 +84,14 @@ export default function PersonalInfoForm() {
       age: Number(values.age),
       gender: values.gender,
       state: values.state,
+      height: Number(values.height),
+      weight: Number(values.weight),
     });
   }
 
   return (
     <Card className="mx-auto w-full max-w-2xl">
       <CardHeader>
-        <CardTitle>Personal Information</CardTitle>
         <CardDescription>Please fill in your details below.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -92,7 +103,7 @@ export default function PersonalInfoForm() {
                 name="age"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Age</FormLabel>
+                    <FormLabel>Age (in months)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -132,6 +143,56 @@ export default function PersonalInfoForm() {
                         <SelectItem value="OTHER">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="height"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Height (in cm)</FormLabel>
+
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="79"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(
+                            value === "" ? "" : Number.parseInt(value, 10),
+                          );
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight (in kg)</FormLabel>
+
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="10"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(
+                            value === "" ? "" : Number.parseInt(value, 10),
+                          );
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
